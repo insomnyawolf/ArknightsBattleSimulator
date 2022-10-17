@@ -817,9 +817,9 @@
                     "id": "enemy_cchmpn_bmod_3",
                     "description": "[Tiacauh Brave] Max HP +130%, ATK +50%, RES +60, no longer lowers own DEF when blocked",
                     "points": 3,
-                    "mutexGroupKey": "shield_croc",
+                    "mutexGroupKey": "enemy_cchmpn",
                     "runes": [{
-                        "key": "enemy_cchmpn",
+                        "key": "enemy_attribute_mul",
                         "selector": {
                             "professionMask": 0,
                             "buildableMask": 0,
