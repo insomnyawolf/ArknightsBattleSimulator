@@ -31,7 +31,7 @@ Discord Invite: [Link](https://discord.gg/bzMvwtzQ)
 6. Give the file run permission `adb shell "chmod 755 /data/local/tmp/frida-server"`.
 7. Run the file `adb shell "/data/local/tmp/frida-server"`.
 8. Check whether frida works or not using `frida-ps -U`. (If it says "not recognized", type in `env\scripts\activate.bat` first and try again.)
-9. Run `py frida.py` after you opened the game.
+9. Run `py fridahook.py` after you opened the game.
 
 ## Changing contengency contract season
 Change the value in `config\crisisConfig.json` to whatever you want. The avaiable seasons are in `data\crisis`.
