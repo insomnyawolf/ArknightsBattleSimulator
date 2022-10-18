@@ -25,7 +25,7 @@ Discord Invite: [Link](https://discord.gg/bzMvwtzQ)
 
 1. Download `frida-server-16.0.1-android-x86_64.xz` from [here](https://github.com/frida/frida/releases).
 2. Extract and rename the file to `frida-server`.
-3. Enable root on your emulator (Currently tested: LDPlayer, MuMu Player).
+3. Enable root on your emulator (64-bit only) (Currently tested: LDPlayer, MuMu Player).
 4. Connect to your emulator using adb (Google the method for your emulator).
 5. Copy the `frida-server` from step 2 using `adb push frida-server /data/local/tmp/`.
 6. Give the file run permission `adb shell "chmod 755 /data/local/tmp/frida-server"`.
