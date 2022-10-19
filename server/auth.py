@@ -255,6 +255,12 @@ def syncData():
 
     playerData["user"]["rlv2"] = is2_data["playerDataDelta"]["modified"]["rlv2"]
 
+    with open("data\\battleReplays.json") as f:
+        replay_data = json.load(f)
+
+    for replay in replay_data["saved"]:
+        playerData["user"]["dungeon"]["stages"][replay]["hasBattleReplay"] = 1
+
     with open("data\\userData.json", "w") as f:
         json.dump(playerData, f, indent=4)
     

@@ -10,16 +10,24 @@ def getCrisisInfo():
     with open("config\\crisisConfig.json") as f:
         selected_crisis = json.load(f)["selectedCrisis"]
 
-    with open(f"data\\crisis\\{selected_crisis}.json") as f:
-        rune = json.load(f)
+    if selected_crisis:
+        with open(f"data\\crisis\\{selected_crisis}.json") as f:
+            rune = json.load(f)
 
-    current_time = round(time())
-    next_day = round(time()) + 86400
+        current_time = round(time())
+        next_day = round(time()) + 86400
 
-    rune["ts"] = current_time
-    rune["playerDataDelta"]["modified"]["crisis"]["lst"] = current_time
-    rune["playerDataDelta"]["modified"]["crisis"]["nst"] = next_day
-    rune["playerDataDelta"]["modified"]["crisis"]["training"]["nst"] = next_day
+        rune["ts"] = current_time
+        rune["playerDataDelta"]["modified"]["crisis"]["lst"] = current_time
+        rune["playerDataDelta"]["modified"]["crisis"]["nst"] = next_day
+        rune["playerDataDelta"]["modified"]["crisis"]["training"]["nst"] = next_day
+   
+    else:
+        rune = {
+            "ts": round(time()),
+            "data": {},
+            "playerDataDelta": {}
+        }
 
     return rune
 

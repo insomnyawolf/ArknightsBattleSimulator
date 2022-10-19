@@ -1,11 +1,15 @@
-import frida
 import sys
+import time
+import frida
 
 def on_message(message, data):
     print("[%s] => %s" % (message, data))
 
 def main():
     device = frida.get_usb_device(timeout=1)
+    pid = device.spawn('com.YoStarEN.Arknights')
+    device.resume(pid)
+    time.sleep(5)
     session = device.attach("Arknights", realm='emulated')
     script = session.create_script("""
     var proc = Module.findBaseAddress("libil2cpp.so")

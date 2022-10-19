@@ -19,6 +19,7 @@ app.add_url_rule('/account/syncStatus', methods=['POST'], view_func=auth.syncSta
 app.add_url_rule('/quest/battleStart', methods=['POST'], view_func=battle.battleStart)
 app.add_url_rule('/quest/battleFinish', methods=['POST'], view_func=battle.battleFinish)
 app.add_url_rule('/quest/saveBattleReplay', methods=['POST'], view_func=battle.saveBattleReplay)
+app.add_url_rule('/quest/getBattleReplay', methods=['POST'], view_func=battle.getBattleReplay)
 
 # Building
 app.add_url_rule('/building/sync', methods=['POST'], view_func=building.buildingSync)
