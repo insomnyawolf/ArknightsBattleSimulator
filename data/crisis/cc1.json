@@ -398,7 +398,7 @@
                     "bgPicId": "crisis_enemy_2",
                     "groupType": null,
                     "iconId": "char_debuff_1",
-                    "runeId": "cha'r_debuff_1",
+                    "runeId": "char_debuff_1",
                     "runeName": "None",
                     "sortId": 28,
                     "stageId": "level_rune_03-01"
