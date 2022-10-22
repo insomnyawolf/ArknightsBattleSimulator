@@ -15,7 +15,7 @@ def main():
     var proc = Module.findBaseAddress("libil2cpp.so")
     console.log("Initiating!")
 
-    Interceptor.attach(proc.add(0xC47750), {
+    Interceptor.attach(proc.add(0xE97830), {
         onEnter: function (args) {
             console.log("Enter Crisis Battle!")
         },
