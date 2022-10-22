@@ -1,7 +1,7 @@
 from flask import request
 
 
-def anniBattleStart():
+def campaignV2BattleStart():
 
     data = request.data
     data = {
@@ -16,7 +16,7 @@ def anniBattleStart():
     return data
 
 
-def anniBattleFinish():
+def campaignV2BattleFinish():
 
     data = request.data
     data = {

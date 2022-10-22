@@ -1,20 +1,6 @@
 from flask import request
 
 
-def batchSetCharVoiceLan():
-
-    data = request.data
-    data = {
-        "result": {},
-        "playerDataDelta": {
-            "modified": {},
-            "deleted": {}
-        }
-    }
-
-    return data
-
-
 def getUnconfirmedOrderIdList():
 
     data = request.data

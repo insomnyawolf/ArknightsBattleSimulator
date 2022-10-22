@@ -1,19 +1,17 @@
-import json
 from time import time
 
 from flask import request
 
+from utils import read_json, write_json
 
-def getCrisisInfo():
+
+def crisisGetCrisisInfo():
 
     data = request.data
-    with open("config\\crisisConfig.json") as f:
-        selected_crisis = json.load(f)["selectedCrisis"]
+    selected_crisis = read_json("config\\crisisConfig.json")["selectedCrisis"]
 
     if selected_crisis:
-        with open(f"data\\crisis\\{selected_crisis}.json") as f:
-            rune = json.load(f)
-
+        rune = read_json(f"data\\crisis\\{selected_crisis}.json")
         current_time = round(time())
         next_day = round(time()) + 86400
 
@@ -36,22 +34,18 @@ def crisisBattleStart():
 
     data = request.data
     data = request.get_json()
-    with open("config\\crisisConfig.json") as f:
-        selected_crisis = json.load(f)["selectedCrisis"]
+    selected_crisis = read_json("config\\crisisConfig.json")["selectedCrisis"]
+    rune_data = read_json(f"data\\crisis\\{selected_crisis}.json")["data"]["stageRune"][data["stageId"]]
 
-    with open(f"data\\crisis\\{selected_crisis}.json") as f:
-        rune_data = json.load(f)["data"]["stageRune"][data["stageId"]]
-
-    totalRisks = 0
+    total_risks = 0
     for each_rune in data["rune"]:
-        totalRisks += rune_data[each_rune]["points"]
+        total_risks += rune_data[each_rune]["points"]
 
-    with open("data\\rune.json", "w") as f:
-        json.dump({
-            "chosenCrisis": selected_crisis,
-            "chosenRisks": data["rune"],
-            "totalRisks": totalRisks
-        }, f, indent=4)
+    write_json({
+        "chosenCrisis": selected_crisis,
+        "chosenRisks": data["rune"],
+        "totalRisks": total_risks
+    }, "data\\rune.json")
     
     data = {
         'battleId': 'abcdefgh-1234-5678-a1b2c3d4e5f6',
@@ -69,17 +63,16 @@ def crisisBattleStart():
 
 def crisisBattleFinish():
 
-    with open("data\\rune.json") as f:
-        totalRisks = json.load(f)["totalRisks"]
+    total_risks = read_json("data\\rune.json")["totalRisks"]
 
     data = request.data
     data = {
         "result": 0,
-        "score": totalRisks,
+        "score": total_risks,
         "updateInfo": {
             "point": {
                 "before": -1,
-                "after": totalRisks
+                "after": total_risks
             }
         },
         "playerDataDelta": {

@@ -15,5 +15,10 @@
             "skills": [1, 0]
         }
     },
-    "duplicateUnits": ["char_377_gdglow", "char_377_gdglow", "char_377_gdglow", "char_377_gdglow", "char_377_gdglow", "char_377_gdglow"]
+    "duplicateUnits": ["char_377_gdglow", "char_377_gdglow", "char_377_gdglow", "char_377_gdglow", "char_377_gdglow"],
+    "assistUnit": {
+        "charId": "char_350_surtr",
+        "skinId": "char_350_surtr@it#1",
+        "skillIndex": 2
+    }
 }

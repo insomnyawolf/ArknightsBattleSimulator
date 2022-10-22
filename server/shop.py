@@ -1,7 +1,7 @@
 from flask import request
 
 
-def getSkinGoodList():
+def shopGetSkinGoodList():
 
     data = request.data
     data = {

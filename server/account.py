@@ -1,10 +1,14 @@
 import json
+from os.path import exists
 from time import time
 from copy import deepcopy
+from base64 import b64encode
+from hashlib import md5
 
 import requests
 from flask import request
 
+from utils import read_json, write_json
 
 def accountLogin():
 
@@ -12,13 +16,10 @@ def accountLogin():
 
     headers = dict(request.headers)
     headers["Host"] = "gs.arknights.global"
-    playerData = requests.post('https://gs.arknights.global:8443/account/login',
+    player_data = requests.post('https://gs.arknights.global:8443/account/login',
         headers=headers,
         json=request.json
     ).json()
-
-    secret = playerData["secret"]
-    uid = playerData["uid"]
 
     data = {
         "result": 0,
@@ -27,57 +28,59 @@ def accountLogin():
         "serviceLicenseVersion": 0
     }
 
-    with open("data\\auth.json", 'w') as f:
-        json.dump({"secret": secret, "uid": uid}, f, indent=4)
+    saved_data = {}
+    if exists("data\\user.json"):
+        saved_data = read_json("data\\user.json")
+    saved_data.update({"secret": player_data["secret"], "uid": player_data["uid"]})
+    write_json(saved_data, "data\\user.json")
 
     return data
 
 
-def syncData():
+def accountSyncData():
 
     data = request.data
-    with open("data\\auth.json") as f:
-        user_data = json.load(f)
+
+    saved_data = read_json("data\\user.json")
 
     headers = dict(request.headers)
     headers["Host"] = "gs.arknights.global"
-    headers["uid"] = user_data["uid"]
-    headers["secret"] = user_data["secret"]
-    playerData = requests.post('https://gs.arknights.global:8443/account/syncData',
+    headers["uid"] = saved_data["uid"]
+    headers["secret"] = saved_data["secret"]
+    player_data = requests.post('https://gs.arknights.global:8443/account/syncData',
         headers=headers,
         json=request.json
     ).json()
 
-    dataSkin = requests.get('https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/skin_table.json').json()
+    # Load newest data
+    data_skin = requests.get('https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/skin_table.json').json()
     character_table = requests.get('https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/character_table.json').json()
     equip_table = requests.get('https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/uniequip_table.json').json()
     equip_keys = list(equip_table["charEquip"].keys())
 
+    ts = round(time())
     cnt = 0
     cntInstId = 1
     tempSkinTable = {}
     myCharList = {}
 
     #Tamper Skins
-    skinKeys = list(dataSkin["charSkins"].keys())
-    playerData["user"]["skin"]["characterSkins"] = {}
-    for i in dataSkin["charSkins"]:
+    skinKeys = list(data_skin["charSkins"].keys())
+    player_data["user"]["skin"]["characterSkins"] = {}
+    for i in data_skin["charSkins"]:
         if "@" not in skinKeys[cnt]:
             # Not Special Skins
             cnt += 1
             continue
         
-        playerData["user"]["skin"]["characterSkins"][skinKeys[cnt]] = 1
-        tempSkinTable[dataSkin["charSkins"][i]["charId"]] = dataSkin["charSkins"][i]["skinId"]
+        player_data["user"]["skin"]["characterSkins"][skinKeys[cnt]] = 1
+        tempSkinTable[data_skin["charSkins"][i]["charId"]] = data_skin["charSkins"][i]["skinId"]
         cnt += 1
         
     #Tamper Operators
-
-    with open("config\\charEdit.json") as f:
-        edit_json = json.load(f)
+    edit_json = read_json("config\\charConfig.json")
 
     cnt = 0
-
     operatorKeys = list(character_table.keys())
     for i in character_table:
         if "char" not in operatorKeys[cnt]:
@@ -114,15 +117,16 @@ def syncData():
             "skills": [],
             "voiceLan": "JP",
             "currentEquip": None,
-            "equip": {}
+            "equip": {},
+            "starMark": 0
         }
 
-        # set to E2 art if available
+        # set to E2 art if available skipping is2 recruits
         if operatorKeys[cnt] not in ["char_508_aguard", "char_509_acast", "char_510_amedic", "char_511_asnipe"]:
             if myCharList[int(cntInstId)]["evolvePhase"] == 2:
                 myCharList[int(cntInstId)]["skin"] = str(operatorKeys[cnt]) + "#2"
 
-        # set to seasonal skins [lastest release]
+        # set to seasonal skins
         if operatorKeys[cnt] in tempSkinTable.keys():
             myCharList[int(cntInstId)]["skin"] = tempSkinTable[operatorKeys[cnt]]
 
@@ -151,31 +155,30 @@ def syncData():
                         "level": 1
                     }
                 })
-
             myCharList[int(cntInstId)]["currentEquip"] = equip_table["charEquip"][myCharList[int(cntInstId)]["charId"]][-1]
 
         # Dexnav
-        playerData["user"]["dexNav"]["character"][operatorKeys[cnt]] = {
+        player_data["user"]["dexNav"]["character"][operatorKeys[cnt]] = {
             "charInstId": cntInstId,
             "count": 6
         }
 
-        editList = edit_json["customUnitInfo"]
+        custom_units = edit_json["customUnitInfo"]
 
-        for char in editList:
+        for char in custom_units:
             if operatorKeys[cnt] == char:
-                for key in editList[char]:
+                for key in custom_units[char]:
                     if key != "skills":
-                        myCharList[int(cntInstId)][key] = editList[char][key]
+                        myCharList[int(cntInstId)][key] = custom_units[char][key]
                     else:
-                        for skillIndex, skillValue in enumerate(editList[char]["skills"]):
+                        for skillIndex, skillValue in enumerate(custom_units[char]["skills"]):
                             myCharList[int(cntInstId)]["skills"][skillIndex]["specializeLevel"] = skillValue
 
         cnt += 1
         cntInstId += 1
 
-    dupeCharacters = edit_json["duplicateUnits"]
-    for dupeChar in dupeCharacters:
+    dupe_characters = edit_json["duplicateUnits"]
+    for dupeChar in dupe_characters:
 
         tempChar = {}
         for char in myCharList:
@@ -187,8 +190,8 @@ def syncData():
         myCharList[int(cntInstId)] = tempChar
         cntInstId += 1
 
-    playerData["user"]["troop"]["chars"] = myCharList
-    playerData["user"]["troop"]["curCharInstId"] = cntInstId
+    player_data["user"]["troop"]["chars"] = myCharList
+    player_data["user"]["troop"]["curCharInstId"] = cntInstId
 
     # Tamper story
     myStoryList = {"init": 1}
@@ -196,7 +199,7 @@ def syncData():
     for story in story_table:
         myStoryList.update({story:1})
 
-    playerData["user"]["status"]["flags"] = myStoryList
+    player_data["user"]["status"]["flags"] = myStoryList
 
     # Tamper Stages
     myStageList = {}
@@ -214,66 +217,84 @@ def syncData():
             }
         })
     
-    playerData["user"]["dungeon"]["stages"] = myStageList
+    player_data["user"]["dungeon"]["stages"] = myStageList
 
     # Tamper Side Stories and Intermezzis
-    for side in playerData["user"]["retro"]["block"]:
-        playerData["user"]["retro"]["block"][side]["locked"] = 0
+    for side in player_data["user"]["retro"]["block"]:
+        player_data["user"]["retro"]["block"][side]["locked"] = 0
 
     # Tamper Anniliations
-    playerData["user"]["campaignsV2"]["open"]["permanent"] = []
-    playerData["user"]["campaignsV2"]["open"]["training"] = []
+    player_data["user"]["campaignsV2"]["open"]["permanent"] = []
+    player_data["user"]["campaignsV2"]["open"]["training"] = []
     for stage in stage_table["stages"]:
         if stage.startswith("camp"):
-            playerData["user"]["campaignsV2"]["open"]["permanent"].append(stage)
-            playerData["user"]["campaignsV2"]["open"]["training"].append(stage)
+            player_data["user"]["campaignsV2"]["open"]["permanent"].append(stage)
+            player_data["user"]["campaignsV2"]["open"]["training"].append(stage)
 
-    ts = round(time())
+    # Tamper Backgrounds
+    background_keys = list(player_data["user"]["background"]["bgs"].keys())
+    for background in background_keys:
+        player_data["user"]["background"]["bgs"][background] = {"unlock": ts}
 
-    playerData["user"]["status"]["lastRefreshTs"] = ts
-    playerData["user"]["status"]["lastApAddTime"] = ts
-    playerData["user"]["status"]["registerTs"] = ts
-    playerData["user"]["status"]["lastOnlineTs"] = ts
-    playerData["ts"] = ts
+    player_data["user"]["status"]["lastRefreshTs"] = ts
+    player_data["user"]["status"]["lastApAddTime"] = ts
+    player_data["user"]["status"]["registerTs"] = ts
+    player_data["user"]["status"]["lastOnlineTs"] = ts
+    player_data["ts"] = ts
 
-    playerData["user"]["status"]["ap"] = 5000
-    playerData["user"]["status"]["diamondShard"] = 5000
-    playerData["user"]["status"]["payDiamond"] = 500
-    playerData["user"]["status"]["nickName"] = "Yostar"
-    playerData["user"]["status"]["nickNumber"] = 1111
-    playerData["user"]["status"]["level"] = 200
-    playerData["user"]["status"]["exp"] = 0
-    playerData["user"]["status"]["resume"] = "What you doing"
-    # playerData["user"]["status"]["secretary"] = "char_113_cqbw"
-    # playerData["user"]["status"]["secretarySkinId"] = "char_113_cqbw#2"
-    playerData["user"]["status"]["uid"] = "123456789"
+    player_data["user"]["status"]["ap"] = 5000
+    player_data["user"]["status"]["diamondShard"] = 5000
+    player_data["user"]["status"]["payDiamond"] = 500
+    player_data["user"]["status"]["nickName"] = "Yostar"
+    player_data["user"]["status"]["nickNumber"] = 1111
+    player_data["user"]["status"]["level"] = 200
+    player_data["user"]["status"]["exp"] = 0
+    player_data["user"]["status"]["resume"] = "What you doing"
+    # player_data["user"]["status"]["secretary"] = "char_113_cqbw"
+    # player_data["user"]["status"]["secretarySkinId"] = "char_113_cqbw#2"
+    player_data["user"]["status"]["uid"] = "123456789"
+    player_data["user"]["checkIn"]["canCheckIn"] = 0
 
-    playerData["user"]["checkIn"]["canCheckIn"] = 0
+    config = read_json("config\\config.json")
+    replay_data = read_json("data\\battleReplays.json")
+    replay_data["currentCharConfig"] = md5(b64encode(json.dumps(edit_json).encode())).hexdigest()
+    write_json(replay_data, "data\\battleReplays.json")
 
-    with open("data\\is2\\is2.json") as f:
-        is2_data = json.load(f)
+    if config["restorePreviousStates"]["is2"]:
+        is2_data = read_json("data\\is2\\is2.json")
+        player_data["user"]["rlv2"] = is2_data["player_dataDelta"]["modified"]["rlv2"]
 
-    playerData["user"]["rlv2"] = is2_data["playerDataDelta"]["modified"]["rlv2"]
+    # Enable battle replays
+    if replay_data["currentCharConfig"] in list(replay_data["saved"].keys()):
+        for replay in replay_data["saved"][replay_data["currentCharConfig"]]:
+            player_data["user"]["dungeon"]["stages"][replay]["hasBattleReplay"] = 1
 
-    with open("data\\battleReplays.json") as f:
-        replay_data = json.load(f)
+    # Copy over from previous launch if data exists
+    if "user" in list(saved_data.keys()):
+        player_data["user"]["troop"]["squads"] = saved_data["user"]["troop"]["squads"]
 
-    for replay in replay_data["saved"]:
-        playerData["user"]["dungeon"]["stages"][replay]["hasBattleReplay"] = 1
+        for _, saved_character in saved_data["user"]["troop"]["chars"].items():
+            index = "0"
+            for character_index, character in player_data["user"]["troop"]["chars"].items():
+                if saved_character["charId"] == character["charId"]:
+                    index = character_index
+                    break
 
-    with open("data\\userData.json", "w") as f:
-        json.dump(playerData, f, indent=4)
+            player_data["user"]["troop"]["chars"][index]["starMark"] = saved_character["starMark"]
+            player_data["user"]["troop"]["chars"][index]["voiceLan"] = saved_character["voiceLan"]
+
+    write_json(player_data, "data\\user.json")
     
-    return playerData
+    return player_data
 
 
-def syncStatus():
+def accountSyncStatus():
     
     data = request.data
     data = {
         "ts": round(time()),
         "result": {},
-        "playerDataDelta": {
+        "player_dataDelta": {
             "modified": {},
             "deleted": {}
         }

@@ -10,8 +10,7 @@ Simulate Arknights stages without costing sanity (works with guest account)
 
 Check `Features.md` to see what you can do with this.
 
-Discord Invite: [Link](https://discord.gg/bzMvwtzQ)
-
+Discord Invite: [Link](https://discord.gg/xy5vFEHCWf)
 
 ## How To
 
@@ -37,7 +36,7 @@ Discord Invite: [Link](https://discord.gg/bzMvwtzQ)
 Change the value in `config\crisisConfig.json` to whatever you want. The avaiable seasons are in `data\crisis`.
 
 ## Customizing indivual operators level, potentials, skill ranks and others
-Customize each operator indivually by adding new info in `customUnitInfo` key in `edit.json`. You can find <operator_key_name> from [here](https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/character_table.json). By default, all characters will have max level, max potentials, max mastery.
+Customize each operator indivually by adding new info in `customUnitInfo` key in `config\charConfig.json`. You can find <operator_key_name> from [here](https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/character_table.json). By default, all characters will have max level, max potentials, max mastery.
 
 - `favorPoint` - Trust points (25570 is 200% Trust) [link to exact point to %](https://gamepress.gg/arknights/core-gameplay/arknights-guide-operator-trust)
 - `mainSkillLvl` - Skill Rank (Put mastery at 0 if this is lower than 7)
@@ -58,55 +57,24 @@ Customize each operator indivually by adding new info in `customUnitInfo` key in
 ```
 
 ## Customizing support unit
-Customize the support unit list by changing the unit info in `assitList` key in `edit.json`. All characters info can be found [here](https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/character_table.json).
+Customize the support unit list by changing the unit info in `assistUnit` key in `config\charConfig.json`. All characters info can be found [here](https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/character_table.json).
 
 - `charId` - key of the character
-- `skinId` - skinId of the character (Just put `charId` + `#1`)
-- `skills` - All skills of an operator with their respective mastery level.
-- Other keys are same as editing a new character as above.
+- `skinId` - skinId of the character (Skin List can be found [here](https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/skin_table.json))
+- `skillIndex` - Skill Index of the support unit (Index starts from 0).
 
+Note: Characters stats and skill masteries are based on the above parameters.
 
 ### Format
 ```
 {
     "charId": "char_350_surtr",
-    "skinId": "char_350_surtr#1",
-    "skills": [
-        {
-            "skillId": "skchr_surtr_1",
-            "unlock": 1,
-            "state": 0,
-            "specializeLevel": 3,
-            "completeUpgradeTime": -1
-        },
-        {
-            "skillId": "skchr_surtr_2",
-            "unlock": 1,
-            "state": 0,
-            "specializeLevel": 3,
-            "completeUpgradeTime": -1
-        },
-        {
-            "skillId": "skchr_surtr_3",
-            "unlock": 1,
-            "state": 0,
-            "specializeLevel": 3,
-            "completeUpgradeTime": -1
-        }
-    ],
-    "mainSkillLvl": 7,
-    "skillIndex": 2,
-    "evolvePhase": 2,
-    "favorPoint": 25570,
-    "potentialRank": 5,
-    "level": 80,
-    "crisisRecord": {},
-    "currentEquip": null,
-    "equip": {}
+    "skinId": "char_350_surtr@it#1",
+    "skillIndex": 2
 }
 ```
 
 ## TODO
+- [ ] Fix CC
 - [ ] Add a UI for easy editing
-- [ ] Include modules stuffs
 
