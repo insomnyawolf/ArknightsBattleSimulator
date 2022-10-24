@@ -10,7 +10,7 @@ def main():
     pid = device.spawn('com.YoStarEN.Arknights')
     device.resume(pid)
     time.sleep(5)
-    session = device.attach("Arknights", realm='emulated')
+    session = device.attach(pid, realm='emulated')
     script = session.create_script("""
     var proc = Module.findBaseAddress("libil2cpp.so")
     console.log("Initiating!")
