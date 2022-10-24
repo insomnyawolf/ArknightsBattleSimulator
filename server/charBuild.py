@@ -1,5 +1,6 @@
 from flask import request
 
+from constants import USER_JSON_PATH
 from utils import read_json, write_json
 
 
@@ -33,7 +34,7 @@ def charBuildSetCharVoiceLan():
         }
     }
 
-    saved_data = read_json("data\\user.json")
+    saved_data = read_json(USER_JSON_PATH)
     for character in request_data["charList"]:
 
         saved_data["user"]["troop"]["chars"][str(character)]["voiceLan"] = request_data["voiceLan"]
@@ -43,7 +44,7 @@ def charBuildSetCharVoiceLan():
             }
         })
 
-    write_json(saved_data, "data\\user.json")
+    write_json(saved_data, USER_JSON_PATH)
 
     return data
 
@@ -94,7 +95,7 @@ def charBuildChangeCharSkin():
 
     if charInstId and skinId:
 
-        saved_data = read_json("data\\user.json")
+        saved_data = read_json(USER_JSON_PATH)
         data["playerDataDelta"]["modified"]["troop"]["chars"].update({
             str(charInstId): {
                 "skin": skinId
@@ -106,7 +107,7 @@ def charBuildChangeCharSkin():
                 "skin": skinId
             }
         })
-        write_json(saved_data, "data\\user.json")
+        write_json(saved_data, USER_JSON_PATH)
 
         return data
 
@@ -130,7 +131,7 @@ def charBuildSetEquipment():
 
     if charInstId and equipId:
 
-        saved_data = read_json("data\\user.json")
+        saved_data = read_json(USER_JSON_PATH)
         data["playerDataDelta"]["modified"]["troop"]["chars"].update({
             str(charInstId): {
                 "currentEquip": equipId
@@ -142,6 +143,6 @@ def charBuildSetEquipment():
                 "currentEquip": equipId
             }
         })
-        write_json(saved_data, "data\\user.json")
+        write_json(saved_data, USER_JSON_PATH)
 
         return data

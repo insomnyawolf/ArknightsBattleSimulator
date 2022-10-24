@@ -2,16 +2,17 @@ from time import time
 
 from flask import request
 
+from constants import CRISIS_CONFIG_PATH, CRISIS_JSON_BASE_PATH, RUNE_JSON_PATH
 from utils import read_json, write_json
 
 
 def crisisGetCrisisInfo():
 
     data = request.data
-    selected_crisis = read_json("config\\crisisConfig.json")["selectedCrisis"]
+    selected_crisis = read_json(CRISIS_CONFIG_PATH)["selectedCrisis"]
 
     if selected_crisis:
-        rune = read_json(f"data\\crisis\\{selected_crisis}.json")
+        rune = read_json(f"{CRISIS_JSON_BASE_PATH}{selected_crisis}.json")
         current_time = round(time())
         next_day = round(time()) + 86400
 
@@ -34,8 +35,8 @@ def crisisBattleStart():
 
     data = request.data
     data = request.get_json()
-    selected_crisis = read_json("config\\crisisConfig.json")["selectedCrisis"]
-    rune_data = read_json(f"data\\crisis\\{selected_crisis}.json")["data"]["stageRune"][data["stageId"]]
+    selected_crisis = read_json(CRISIS_CONFIG_PATH)["selectedCrisis"]
+    rune_data = read_json(f"{CRISIS_JSON_BASE_PATH}{selected_crisis}.json")["data"]["stageRune"][data["stageId"]]
 
     total_risks = 0
     for each_rune in data["rune"]:
@@ -45,7 +46,7 @@ def crisisBattleStart():
         "chosenCrisis": selected_crisis,
         "chosenRisks": data["rune"],
         "totalRisks": total_risks
-    }, "data\\rune.json")
+    }, RUNE_JSON_PATH)
     
     data = {
         'battleId': 'abcdefgh-1234-5678-a1b2c3d4e5f6',
@@ -63,7 +64,7 @@ def crisisBattleStart():
 
 def crisisBattleFinish():
 
-    total_risks = read_json("data\\rune.json")["totalRisks"]
+    total_risks = read_json(RUNE_JSON_PATH)["totalRisks"]
 
     data = request.data
     data = {

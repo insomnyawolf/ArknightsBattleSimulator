@@ -8,6 +8,9 @@ from hashlib import md5
 import requests
 from flask import request
 
+from constants import USER_JSON_PATH, CHAR_CONFIG_PATH, MISC_CONFIG_PATH, \
+                    BATTLE_REPLAY_JSON_PATH, RLV2_JSON_PATH, \
+                    SKIN_TABLE_URL, CHARACTER_TABLE_URL, EQUIP_TABLE_URL, STORY_TABLE_URL, STAGE_TABLE_URL
 from utils import read_json, write_json
 
 def accountLogin():
@@ -29,10 +32,10 @@ def accountLogin():
     }
 
     saved_data = {}
-    if exists("data\\user.json"):
-        saved_data = read_json("data\\user.json")
+    if exists(USER_JSON_PATH):
+        saved_data = read_json(USER_JSON_PATH)
     saved_data.update({"secret": player_data["secret"], "uid": player_data["uid"]})
-    write_json(saved_data, "data\\user.json")
+    write_json(saved_data, USER_JSON_PATH)
 
     return data
 
@@ -40,8 +43,7 @@ def accountLogin():
 def accountSyncData():
 
     data = request.data
-
-    saved_data = read_json("data\\user.json")
+    saved_data = read_json(USER_JSON_PATH)
 
     headers = dict(request.headers)
     headers["Host"] = "gs.arknights.global"
@@ -53,10 +55,9 @@ def accountSyncData():
     ).json()
 
     # Load newest data
-    data_skin = requests.get('https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/skin_table.json').json()
-    character_table = requests.get('https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/character_table.json').json()
-    equip_table = requests.get('https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/uniequip_table.json').json()
-    equip_keys = list(equip_table["charEquip"].keys())
+    data_skin = requests.get(SKIN_TABLE_URL).json()
+    character_table = requests.get(CHARACTER_TABLE_URL).json()
+    equip_table = requests.get(EQUIP_TABLE_URL).json()
 
     ts = round(time())
     cnt = 0
@@ -78,10 +79,12 @@ def accountSyncData():
         cnt += 1
         
     #Tamper Operators
-    edit_json = read_json("config\\charConfig.json")
+    edit_json = read_json(CHAR_CONFIG_PATH)
 
     cnt = 0
     operatorKeys = list(character_table.keys())
+    equip_keys = list(equip_table["charEquip"].keys())
+
     for i in character_table:
         if "char" not in operatorKeys[cnt]:
             cnt += 1
@@ -195,7 +198,7 @@ def accountSyncData():
 
     # Tamper story
     myStoryList = {"init": 1}
-    story_table = requests.get('https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/story_table.json').json()
+    story_table = requests.get(STORY_TABLE_URL).json()
     for story in story_table:
         myStoryList.update({story:1})
 
@@ -203,7 +206,7 @@ def accountSyncData():
 
     # Tamper Stages
     myStageList = {}
-    stage_table = requests.get('https://raw.githubusercontent.com/Kengxxiao/ArknightsGameData/master/en_US/gamedata/excel/stage_table.json').json()
+    stage_table = requests.get(STAGE_TABLE_URL).json()
     for stage in stage_table["stages"]:
         myStageList.update({
             stage: {
@@ -255,14 +258,14 @@ def accountSyncData():
     player_data["user"]["status"]["uid"] = "123456789"
     player_data["user"]["checkIn"]["canCheckIn"] = 0
 
-    config = read_json("config\\config.json")
-    replay_data = read_json("data\\battleReplays.json")
+    config = read_json(MISC_CONFIG_PATH)
+    replay_data = read_json(BATTLE_REPLAY_JSON_PATH)
     replay_data["currentCharConfig"] = md5(b64encode(json.dumps(edit_json).encode())).hexdigest()
-    write_json(replay_data, "data\\battleReplays.json")
+    write_json(replay_data, BATTLE_REPLAY_JSON_PATH)
 
     if config["restorePreviousStates"]["is2"]:
-        is2_data = read_json("data\\is2\\is2.json")
-        player_data["user"]["rlv2"] = is2_data["player_dataDelta"]["modified"]["rlv2"]
+        is2_data = read_json(RLV2_JSON_PATH)
+        player_data["user"]["rlv2"] = is2_data
 
     # Enable battle replays
     if replay_data["currentCharConfig"] in list(replay_data["saved"].keys()):
@@ -283,7 +286,7 @@ def accountSyncData():
             player_data["user"]["troop"]["chars"][index]["starMark"] = saved_character["starMark"]
             player_data["user"]["troop"]["chars"][index]["voiceLan"] = saved_character["voiceLan"]
 
-    write_json(player_data, "data\\user.json")
+    write_json(player_data, USER_JSON_PATH)
     
     return player_data
 

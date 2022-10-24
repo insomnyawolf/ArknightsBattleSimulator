@@ -2,6 +2,7 @@ from time import time
 
 from flask import request
 
+
 def buildingSync():
 
     data = request.data

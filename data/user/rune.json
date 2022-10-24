@@ -1,0 +1,10 @@
+{
+    "chosenCrisis": "cc7",
+    "chosenRisks": [
+        "enemy_atk_2",
+        "enemy_xi_bmod_3",
+        "enemy_attackspeed_2",
+        "enemy_spslme_bmod_3"
+    ],
+    "totalRisks": 10
+}

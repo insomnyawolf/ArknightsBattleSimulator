@@ -1,8 +1,8 @@
-import json
 from time import time
 
 from flask import request
 
+from constants import BATTLE_REPLAY_JSON_PATH, USER_JSON_PATH, CHAR_CONFIG_PATH
 from utils import read_json, write_json
 
 
@@ -23,13 +23,9 @@ def questBattleStart():
         'result': 0
     }
 
-    with open("data\\battleReplays.json") as f:
-        replay_data = json.load(f)
-
+    replay_data = read_json(BATTLE_REPLAY_JSON_PATH)
     replay_data["current"] = request_data["stageId"]
-
-    with open("data\\battleReplays.json", "w") as f:
-        json.dump(replay_data, f, indent=4)
+    write_json(replay_data, BATTLE_REPLAY_JSON_PATH)
 
     return data
 
@@ -65,7 +61,7 @@ def questSaveBattleReplay():
     data = request.data
     request_data = request.get_json()
 
-    replay_data = read_json("data\\battleReplays.json")
+    replay_data = read_json(BATTLE_REPLAY_JSON_PATH)
 
     data = {
         "result": 0,
@@ -96,7 +92,7 @@ def questSaveBattleReplay():
             }
         })
     replay_data["current"] = None
-    write_json(replay_data, "data\\battleReplays.json")
+    write_json(replay_data, BATTLE_REPLAY_JSON_PATH)
 
     return data
 
@@ -106,7 +102,7 @@ def questGetBattleReplay():
     data = request.data
     stageId = request.get_json()["stageId"]
 
-    replay_data = read_json("data\\battleReplays.json")
+    replay_data = read_json(BATTLE_REPLAY_JSON_PATH)
     battleData = {
         "battleReplay": replay_data["saved"][replay_data["currentCharConfig"]][stageId],
         "playerDataDelta": {
@@ -140,9 +136,9 @@ def questChangeSquadName():
             }
         })
 
-        saved_data = read_json("data\\user.json")
+        saved_data = read_json(USER_JSON_PATH)
         saved_data["user"]["troop"]["squads"][str(request_data["squadId"])]["name"] = request_data["name"]
-        write_json(saved_data, "data\\user.json")
+        write_json(saved_data, USER_JSON_PATH)
 
         return data
 
@@ -169,9 +165,9 @@ def questSquadFormation():
             }
         })
 
-        saved_data = read_json("data\\user.json")
+        saved_data = read_json(USER_JSON_PATH)
         saved_data["user"]["troop"]["squads"][str(request_data["squadId"])]["slots"] = request_data["slots"]
-        write_json(saved_data, "data\\user.json")
+        write_json(saved_data, USER_JSON_PATH)
 
         return data
 
@@ -179,8 +175,8 @@ def questSquadFormation():
 def questGetAssistList():
 
     data = request.data
-    assist_unit_config = read_json("config\\charConfig.json")["assistUnit"]
-    saved_data = read_json("data\\user.json")["user"]["troop"]["chars"]
+    assist_unit_config = read_json(CHAR_CONFIG_PATH)["assistUnit"]
+    saved_data = read_json(USER_JSON_PATH)["user"]["troop"]["chars"]
     assist_unit = {}
 
     for _, char in saved_data.items():

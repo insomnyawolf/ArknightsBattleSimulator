@@ -1,21 +1,7 @@
 from flask import request
 
 
-def getUnconfirmedOrderIdList():
-
-    data = request.data
-    data = {
-        "orderIdList": [],
-        "playerDataDelta": {
-            "deleted": {},
-            "modified": {}
-        }
-    }
-
-    return data
-
-
-def checkIn():
+def userCheckIn():
 
     data = request.data
     data = {
@@ -29,7 +15,7 @@ def checkIn():
     return data
 
 
-def changeSecretary():
+def userChangeSecretary():
 
     data = request.data
     request_data = request.get_json()
@@ -39,8 +25,8 @@ def changeSecretary():
         "playerDataDelta":{
             "modified":{
                 "status":{
-                    "secretary":"",
-                    "secretarySkinId":"",
+                    "secretary": "",
+                    "secretarySkinId": "",
                 }
             },
             "deleted":{}
